@@ -118,127 +118,56 @@ npm install
 npm run dev
 
 # Open browser to http://localhost:3000
-```
 
-### Project Structure
-```
-inventory-management-task/
-├── data/                  # JSON data files
-├── src/
-│   └── pages/            # Next.js pages and API routes
-└── package.json
-```
+Implementation SummaryName: Hamid Akhavan
+Completion Time: Approximately 16 hours (October 24-26, 2025)Features Completed:Task 1: Dashboard Redesign  Created a modern dashboard using Material-UI Cards and Grid for a clean, professional look.  
+Added key metrics: total inventory value, number of warehouses, and count of low stock alerts.  
+Used Chart.js to show stock levels and alert status with bar and doughnut charts.  
+Made the dashboard responsive for mobile and desktop using MUI Grid.  
+Added loading states with CircularProgress and error messages with Alert.  
+Applied green theme (#2e7d32, #4caf50) to match GreenSupply Co’s eco-friendly brand.
 
-The existing codebase includes product, warehouse, and stock management features. Explore the code to understand the current implementation before starting your tasks.
+Task 2: Stock Transfer System  Built a /transfers page with a form using MUI Autocomplete for products and warehouses, and TextField for quantity.  
+Added validation to check for empty fields and same source/destination warehouses, with errors shown in a Snackbar.  
+Created a scrollable table to display transfer history (Product, Source, Destination, Quantity, Actions).  
+Implemented API endpoints: GET /api/transfers (list transfers) and POST /api/transfers (create transfer).  
+Updated data/stock.json after each transfer to reflect new stock levels.  
+Stored transfer records in data/transfers.json.
 
----
+Task 3: Low Stock Alert & Reorder System  Created an /alerts page to show low stock products (Critical: <10 units, Low: <50 units).  
+Added a dropdown to filter alerts by status (All, Critical, Low) and a "Resolve" button for each alert.  
+Generated alerts automatically by comparing data/stock.json with reorderPoint in data/products.json.  
+Stored alerts in data/alerts.json with fields: id, productId, warehouseId, status, reorderAmount, resolved.  
+Built API endpoints: GET /api/alerts (list alerts) and POST /api/alerts/resolve (mark alert as resolved).  
+Integrated alerts into the dashboard for quick access.
 
-## 📝 Submission Requirements
+Key Technical Decisions:Used Material-UI for a consistent, responsive UI with built-in components like Grid and Snackbar.  
+Implemented useMediaQuery for the sidebar to switch between permanent (desktop) and temporary (mobile) modes.  
+Chose Snackbar for user feedback on form errors and actions (e.g., transfer success, alert resolution).  
+Selected Chart.js for simple, clear visualizations in the dashboard.  
+Kept JSON files for data storage as per assignment requirements, ensuring simplicity.  
+Applied a custom MUI theme with green colors (#2e7d32, #4caf50) to align with the eco-friendly brand.
 
-### 1. Code Submission
-- Push your code to **your own GitHub repository** (fork or new repo)
-- Clear commit history showing your progression
-- Update `package.json` with any new dependencies
-- Application must run with: `npm install && npm run dev`
+Known Limitations:JSON files limit scalability compared to a database like MongoDB.  
+No real-time notifications (e.g., email or push) for low stock alerts.  
+Limited error handling for edge cases, such as corrupted JSON files.  
+No advanced filtering in tables (e.g., by date or product category).  
+No unit tests due to time constraints, but code is structured for future testing.
 
-### 2. Video Walkthrough (5-10 minutes) - REQUIRED ⚠️
+Testing Instructions:Clone the repository: git clone https://github.com/hamidak22/inventory-management-task.git.  
+Install dependencies: npm install.  
+Ensure JSON files (products.json, stock.json, warehouses.json, transfers.json, alerts.json) are in the data/ folder.  
+Run the app: npm run dev.  
+Open http://localhost:3000 in a browser.  
+Test features:  Dashboard: Check metrics and charts, resize browser to test responsiveness.  
+Transfers: Submit a valid transfer and an invalid one (e.g., empty quantity) to see Snackbar errors.  
+Alerts: Filter by Critical or Low, resolve an alert, and check Snackbar feedback.  
+Sidebar: Resize browser to mobile view (<600px) to test the hamburger menu.
 
-Record a video demonstration covering:
+Video Walkthrough Link: [Insert YouTube or Loom link here after recording]  New Dependencies:chart.js (for dashboard charts)
+@mui/icons-material (for sidebar and button icons)
 
-**Feature Demo (4-5 minutes)**
-- Redesigned dashboard walkthrough (demonstrate responsiveness)
-- Stock transfer workflow (show both successful and error scenarios)
-- Alert system functionality
+Additional Notes:The project meets all three task requirements with a focus on usability for warehouse managers.  
+The UI is clean and responsive, with a green theme to match the brand.  
+The code is organized with reusable components (e.g., Sidebar, TransfersPage) for maintainability.
 
-**Code Explanation (3-4 minutes)**
-- Key technical decisions and approach
-- Most challenging aspects and solutions
-- Code structure highlights
-
-**Reflection (1-2 minutes)**
-- What you're proud of
-- Known limitations or trade-offs
-- What you'd improve with more time
-
-**Format:** Upload to YouTube (unlisted), Loom, or similar platform. Include link in your README.
-
-### 3. Update This README
-
-Add an implementation summary at the bottom with:
-- Your name and completion time
-- Features completed
-- Key technical decisions
-- Known limitations
-- Testing instructions
-- Video walkthrough link
-- Any new dependencies added
-
----
-
-## ⏰ Timeline
-
-**Deadline:** 3 days (72 hours) from receiving this assignment
-
-Submit:
-1. GitHub repository link
-2. Video walkthrough link
-3. Updated README with implementation notes
-
-**Estimated effort:** 15-18 hours total
-
-**Note:** This timeline reflects real-world project constraints. Manage your time effectively and prioritize core functionality over bonus features.
-
----
-
-## 🏆 Optional Enhancements
-
-If you have extra time, consider adding:
-- Live deployment (Vercel/Netlify)
-- Dark mode
-- Export functionality (CSV/PDF)
-- Keyboard shortcuts
-- Advanced filtering
-- Accessibility features
-- Unit tests
-- TypeScript
-- Additional features you think add value
-
-**Important:** Complete all 3 core tasks before attempting bonuses. Quality of required features matters more than quantity of extras.
-
----
-
-## 🤔 Frequently Asked Questions
-
-**Q: Can I use additional libraries?**
-A: Yes! Add them to package.json and document your reasoning.
-
-**Q: What if I encounter technical blockers?**
-A: Document the issue, explain what you tried, and move forward with the next task. Include this in your video explanation.
-
-**Q: Can I modify the existing data structure?**
-A: You can add fields, but don't break the existing structure that other features depend on.
-
-**Q: What if I can't complete everything?**
-A: Submit what you have with clear documentation. Quality over quantity.
-
-**Q: How will my submission be used?**
-A: This is solely for technical assessment. Your code will not be used commercially.
-
----
-
-## 🚀 Final Notes
-
-This assessment is designed to simulate real-world development scenarios. We're looking for:
-- Clean, maintainable code
-- Thoughtful problem-solving
-- Professional UI/UX
-- Proper error handling
-- Good communication skills (via your video)
-
-Do your best work, document your decisions, and show us how you approach building production applications.
-
-Good luck! 💪
-
----
-
-**Setup issues?** Verify Node.js is installed and you're using a modern browser. If problems persist, document them in your submission.

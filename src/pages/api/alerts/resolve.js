@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 
-export default function handler(req, res) {
-  const alertsFile = path.join(process.cwd(), 'data/alerts.json');
+const alertsFile = path.join(process.cwd(), 'data/alerts.json');
 
+export default function handler(req, res) {
   if (req.method === 'POST') {
     try {
       const { id } = req.body;
@@ -11,21 +11,28 @@ export default function handler(req, res) {
         return res.status(400).json({ error: 'Alert ID is required' });
       }
 
-      const alerts = JSON.parse(fs.readFileSync(alertsFile));
-      const alert = alerts.find(a => a.id === id);
+      // Read current alerts
+      let alerts = [];
+      if (fs.existsSync(alertsFile)) {
+        alerts = JSON.parse(fs.readFileSync(alertsFile));
+      }
+
+      // Find and update the alert
+      const alert = alerts.find((a) => a.id === id);
       if (!alert) {
         return res.status(404).json({ error: 'Alert not found' });
       }
 
       alert.resolved = true;
-      alert.resolvedAt = new Date().toISOString();
+
+      // Save updated alerts
       fs.writeFileSync(alertsFile, JSON.stringify(alerts, null, 2));
+
       res.status(200).json({ message: 'Alert resolved successfully' });
-    } catch (err) {
+    } catch (error) {
       res.status(500).json({ error: 'Failed to resolve alert' });
     }
   } else {
-    res.setHeader('Allow', ['POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.status(405).json({ error: 'Method not allowed' });
   }
 }

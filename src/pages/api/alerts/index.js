@@ -1,61 +1,80 @@
 import fs from 'fs';
 import path from 'path';
 
-const generateAlerts = (products, stock, warehouses) => {
-  const alerts = [];
-  stock.forEach(({ productId, warehouseId, quantity }) => {
-    const product = products.find(p => p.id === productId);
-    const warehouse = warehouses.find(w => w.id === warehouseId);
-    if (product && warehouse) {
-      let status = 'Adequate';
-      if (quantity < 10) status = 'Critical';
-      else if (quantity < 50) status = 'Low';
-      else if (quantity > product.reorderPoint) status = 'Overstocked';
-      if (status === 'Critical' || status === 'Low') {
-        alerts.push({
-          id: `${productId}-${warehouseId}`,
-          productId,
-          warehouseId,
-          status,
-          reorderAmount: product.reorderPoint - quantity,
-          quantity,
-          resolved: false,
-        });
-      }
-    }
-  });
-  return alerts;
-};
+const productsFile = path.join(process.cwd(), 'data/products.json');
+const stockFile = path.join(process.cwd(), 'data/stock.json');
+const alertsFile = path.join(process.cwd(), 'data/alerts.json');
 
 export default function handler(req, res) {
-  const alertsFile = path.join(process.cwd(), 'data/alerts.json');
-  const productsFile = path.join(process.cwd(), 'data/products.json');
-  const stockFile = path.join(process.cwd(), 'data/stock.json');
-  const warehousesFile = path.join(process.cwd(), 'data/warehouses.json');
+    if (req.method === 'GET') {
+        try {
+            // Read products and stock data
+            const products = JSON.parse(fs.readFileSync(productsFile));
+            const stock = JSON.parse(fs.readFileSync(stockFile));
+            let alerts = [];
 
-  if (req.method === 'GET') {
-    try {
-      const products = JSON.parse(fs.readFileSync(productsFile));
-      const stock = JSON.parse(fs.readFileSync(stockFile));
-      const warehouses = JSON.parse(fs.readFileSync(warehousesFile));
-      const existingAlerts = fs.existsSync(alertsFile) ? JSON.parse(fs.readFileSync(alertsFile)) : [];
-      
-      const newAlerts = generateAlerts(products, stock, warehouses).filter(
-        newAlert => !existingAlerts.some(existing => existing.id === newAlert.id && existing.resolved)
-      );
-      
-      const allAlerts = [
-        ...existingAlerts,
-        ...newAlerts.filter(newAlert => !existingAlerts.some(existing => existing.id === newAlert.id))
-      ];
-      
-      fs.writeFileSync(alertsFile, JSON.stringify(allAlerts, null, 2));
-      res.status(200).json(allAlerts);
-    } catch (err) {
-      res.status(500).json({ error: 'Failed to load alerts' });
+            // Load existing alerts
+            if (fs.existsSync(alertsFile)) {
+                alerts = JSON.parse(fs.readFileSync(alertsFile));
+            }
+
+            // Keep resolved alerts, update or generate new unresolved alerts
+            const unresolvedAlerts = alerts.filter((alert) => !alert.resolved);
+            const newAlerts = [];
+
+            stock.forEach((stockItem) => {
+                const product = products.find((p) => p.id === stockItem.productId);
+                if (!product) return;
+
+                const quantity = stockItem.quantity;
+                const reorderPoint = product.reorderPoint || 50;
+                const alertId = `${stockItem.productId}-${stockItem.warehouseId}`;
+
+                // Skip if already resolved
+                if (alerts.some((alert) => alert.id === alertId && alert.resolved)) {
+                    return;
+                }
+
+                // Update or create alert for low stock
+                const existingAlert = unresolvedAlerts.find((alert) => alert.id === alertId);
+                if (existingAlert) {
+                    existingAlert.status = quantity < 10 ? 'Critical' : quantity < 50 ? 'Low' : 'Adequate';
+                    existingAlert.reorderAmount = reorderPoint - quantity;
+                    existingAlert.createdAt = new Date().toISOString();
+                } else if (quantity < 50) {
+                    newAlerts.push({
+                        id: alertId,
+                        productId: stockItem.productId,
+                        warehouseId: stockItem.warehouseId,
+                        status: quantity < 10 ? 'Critical' : 'Low',
+                        reorderAmount: reorderPoint - quantity,
+                        quantity,
+                        resolved: false,
+                    });
+                }
+            });
+
+            // Remove resolved alerts if stock is no longer low
+            const updatedAlerts = alerts.filter((alert) => {
+                if (alert.resolved) return true; // Keep resolved alerts
+                const stockItem = stock.find(
+                    (s) => s.productId === alert.productId && s.warehouseId === alert.warehouseId
+                );
+                return stockItem && stockItem.quantity < 50; // Keep unresolved low stock alerts
+            });
+
+            // Add new alerts
+            updatedAlerts.push(...newAlerts);
+
+            // Save updated alerts
+            fs.writeFileSync(alertsFile, JSON.stringify(updatedAlerts, null, 2));
+
+            // Return only unresolved alerts for display
+            res.status(200).json(updatedAlerts.filter((alert) => !alert.resolved));
+        } catch (error) {
+            res.status(500).json({ error: 'Failed to fetch alerts' });
+        }
+    } else {
+        res.status(405).json({ error: 'Method not allowed' });
     }
-  } else {
-    res.setHeader('Allow', ['GET']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
 }

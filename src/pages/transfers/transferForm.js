@@ -23,7 +23,8 @@ export default function TransferForm({ products, warehouses, stock, fetchData })
   const handleSubmit = async (e) => {
     e.preventDefault();
     const availableGoods = stock.filter(item => item.warehouseId === transfer.fromWarehouseId && item.productId === transfer.productId);
-    const destinationQuantity = stock.filter(item => item.warehouseId === transfer.toWarehouseId && item.productId === transfer.productId);
+    const destinationWarehouse = stock.filter(item => item.warehouseId === transfer.toWarehouseId && item.productId === transfer.productId);
+
     if (!availableGoods[0]) {
       setOpenSnackBar('this product is not available in this warehouse.')
     } else if (availableGoods[0].quantity < transfer.quantity) {
@@ -35,7 +36,7 @@ export default function TransferForm({ products, warehouses, stock, fetchData })
         body: JSON.stringify(transfer),
       });
       if (res.ok) {
-        const originWarehouseUpdateRes = await fetch(`/api/stock/${availableGoods[0].id}`, {
+        const originWarehouseUpdateRes = await fetch(`/api/stock/${availableGoods[0]?.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -44,13 +45,13 @@ export default function TransferForm({ products, warehouses, stock, fetchData })
             quantity: parseInt(availableGoods[0].quantity) - parseInt(transfer.quantity),
           }),
         });
-        const destinationWarehouseupdateRes = await fetch(`/api/stock/${destinationQuantity[0].id}`, {
-          method: 'PUT',
+        const destinationWarehouseupdateRes = await fetch(destinationWarehouse[0] ? `/api/stock/${destinationWarehouse[0]?.id}` : '/api/stock', {
+          method: destinationWarehouse[0] ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             productId: parseInt(transfer.productId),
             warehouseId: parseInt(transfer.toWarehouseId),
-            quantity: parseInt((destinationQuantity[0]?.quantity || 0)) + parseInt(transfer.quantity),
+            quantity: parseInt((destinationWarehouse[0]?.quantity || 0)) + parseInt(transfer.quantity),
           }),
         });
         if (originWarehouseUpdateRes.ok && destinationWarehouseupdateRes.ok) {

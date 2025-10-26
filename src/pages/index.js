@@ -113,14 +113,19 @@ export default function Home() {
             <Card sx={{ height: '100%', backgroundColor: alerts.length > 0 ? theme.palette.warning.light : theme.palette.secondary.light, boxShadow: `0px 0px 0px 2px ${theme.palette.success.A100}, 0px 1px 2px 0px ${theme.palette.success.A100}` }}>
               <CardContent sx={{ display: 'flex', flexDirection: "column", height: '100%', justifyContent: "space-between" }} height="100%">
                 <Typography variant="h6">Low Stock Alerts</Typography>
-                <Box p={5}>
-                  {alerts.length > 0 ? alerts.map(alert => {
-                    const currentProduct = products.filter(item => item.id === alert.productId)[0];
-                    return <Box display="flex" justifyContent="space-between">
-                      <Box>{currentProduct.name}</Box>
-                      <Box>{alert.quantity}</Box>
-                    </Box>
-                  }) : 'There is no unresolved Alert.'}
+                <Box p={5} height="100%">
+                  <Box display="flex" justifyContent="space-between" mb={2} pb={2} borderBottom="1px dashed grey">
+                    <Box>Product</Box>
+                    <Box>Quantity</Box>
+                  </Box>
+                  {alerts.length > 0 ? <>
+                    {alerts.map(alert => {
+                      const currentProduct = products.filter(item => item.id === alert.productId)[0];
+                      return <Box display="flex" justifyContent="space-between" key={alert.id}>
+                        <Box>{currentProduct.name}</Box>
+                        <Box color={alert.status === 'Critical' ? theme.palette.error.dark : theme.palette.info.dark}>{alert.quantity}</Box>
+                      </Box>
+                    })}</> : 'There is no unresolved Alert.'}
                 </Box>
                 <Button href="/alerts" color="primary">View Alerts</Button>
               </CardContent>

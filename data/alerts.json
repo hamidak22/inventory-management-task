@@ -1,12 +1,12 @@
 [
   {
-    "id": "1-3",
+    "id": "1-2",
     "productId": 1,
-    "warehouseId": 3,
+    "warehouseId": 2,
     "status": "Low",
-    "reorderAmount": 60,
-    "quantity": 50,
+    "reorderAmount": 80,
+    "quantity": 20,
     "resolved": true,
-    "resolvedAt": "2025-10-26T15:13:32.075Z"
+    "createdAt": "2025-10-26T20:34:04.335Z"
   }
 ]

@@ -164,7 +164,7 @@ Transfers: Submit a valid transfer and an invalid one (e.g., empty quantity) to 
 Alerts: Filter by Critical or Low, resolve an alert, and check Snackbar feedback.  
 Sidebar: Resize browser to mobile view (<600px) to test the hamburger menu.
 
-Video Walkthrough Link: [Insert YouTube or Loom link here after recording]  New Dependencies:chart.js (for dashboard charts)
+Video Walkthrough Link: https://www.loom.com/share/8c0f31d1efa04ad09ceb241236da34d3  New Dependencies:chart.js (for dashboard charts)
 @mui/icons-material (for sidebar and button icons)
 
 Additional Notes:The project meets all three task requirements with a focus on usability for warehouse managers.  

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import {
   Container,
   Typography,
@@ -7,7 +6,6 @@ import {
   Grid,
   Card,
   CardContent,
-  Button,
   Table,
   TableBody,
   TableCell,
@@ -15,17 +13,23 @@ import {
   TableHead,
   TableRow,
   Paper,
-  AppBar,
-  Toolbar,
+  Button,
+  useMediaQuery,
 } from '@mui/material';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import CategoryIcon from '@mui/icons-material/Category';
+import StockStatusDonutChart from '@/components/dashboard/stockStatusChart';
+import StockByWarehouseChart from '@/components/dashboard/stockByWarehouseCharts';
+import CategoryValueDonutChart from '@/components/dashboard/categoryValueChart';
+import theme from '@/styles/theme';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
   const [stock, setStock] = useState([]);
+  const [alerts, setAlerts] = useState([]);
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
     // Fetch all data
@@ -33,10 +37,12 @@ export default function Home() {
       fetch('/api/products').then(res => res.json()),
       fetch('/api/warehouses').then(res => res.json()),
       fetch('/api/stock').then(res => res.json()),
-    ]).then(([productsData, warehousesData, stockData]) => {
+      fetch('/api/alerts').then(res => res.json()),
+    ]).then(([productsData, warehousesData, stockData, alertsData]) => {
       setProducts(productsData);
       setWarehouses(warehousesData);
       setStock(stockData);
+      setAlerts(alertsData.filter(item => !item.resolved))
     });
   }, []);
 
@@ -57,68 +63,70 @@ export default function Home() {
     };
   });
 
+
   return (
     <>
-      <AppBar position="static">
-        <Toolbar>
-          <InventoryIcon sx={{ mr: 2 }} />
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Inventory Management System
-          </Typography>
-          <Button color="inherit" component={Link} href="/products">
-            Products
-          </Button>
-          <Button color="inherit" component={Link} href="/warehouses">
-            Warehouses
-          </Button>
-          <Button color="inherit" component={Link} href="/stock">
-            Stock Levels
-          </Button>
-        </Toolbar>
-      </AppBar>
-
-      <Container sx={{ mt: 4, mb: 4 }}>
+      <Container sx={{ mt: isMobile ? 20 : 4, mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Dashboard
         </Typography>
-
         {/* Summary Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={4}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <CategoryIcon sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography variant="h6">Total Products</Typography>
-                </Box>
-                <Typography variant="h3">{products.length}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <WarehouseIcon sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography variant="h6">Warehouses</Typography>
-                </Box>
-                <Typography variant="h3">{warehouses.length}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Card>
+          <Grid item xs={12} md={4}>
+            <Card sx={{ backgroundColor: theme.palette.secondary.light, boxShadow: `0px 0px 0px 2px ${theme.palette.success.A100}, 0px 1px 2px 0px ${theme.palette.success.A100}` }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <InventoryIcon sx={{ mr: 1, color: 'primary.main' }} />
                   <Typography variant="h6">Total Inventory Value</Typography>
                 </Box>
-                <Typography variant="h3">${totalValue.toFixed(2)}</Typography>
+                <Typography variant="h4">${totalValue.toFixed(2)}</Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Card sx={{ backgroundColor: theme.palette.secondary.light, boxShadow: `0px 0px 0px 2px ${theme.palette.success.A100}, 0px 1px 2px 0px ${theme.palette.success.A100}` }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <WarehouseIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <Typography variant="h6">Warehouses</Typography>
+                </Box>
+                <Typography variant="h4">{warehouses.length}</Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Card sx={{ backgroundColor: theme.palette.secondary.light, boxShadow: `0px 0px 0px 2px ${theme.palette.success.A100}, 0px 1px 2px 0px ${theme.palette.success.A100}` }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <CategoryIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <Typography variant="h6">Total Products</Typography>
+                </Box>
+                <Typography variant="h4">{products.length}</Typography>
               </CardContent>
             </Card>
           </Grid>
         </Grid>
-
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <StockStatusDonutChart />
+          <CategoryValueDonutChart />
+          <StockByWarehouseChart /><Grid item xs={12} md={6}>
+            <Card sx={{ height: '100%', backgroundColor: alerts.length > 0 ? theme.palette.warning.light : theme.palette.secondary.light, boxShadow: `0px 0px 0px 2px ${theme.palette.success.A100}, 0px 1px 2px 0px ${theme.palette.success.A100}` }}>
+              <CardContent sx={{ display: 'flex', flexDirection: "column", height: '100%', justifyContent: "space-between" }} height="100%">
+                <Typography variant="h6">Low Stock Alerts</Typography>
+                <Box p={5}>
+                  {alerts.length > 0 ? alerts.map(alert => {
+                    const currentProduct = products.filter(item => item.id === alert.productId)[0];
+                    return <Box display="flex" justifyContent="space-between">
+                      <Box>{currentProduct.name}</Box>
+                      <Box>{alert.quantity}</Box>
+                    </Box>
+                  }) : 'There is no unresolved Alert.'}
+                </Box>
+                <Button href="/alerts" color="primary">View Alerts</Button>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
         {/* Inventory Overview Table */}
         <Typography variant="h5" gutterBottom>
           Inventory Overview
@@ -137,10 +145,10 @@ export default function Home() {
             </TableHead>
             <TableBody>
               {inventoryOverview.map((item) => (
-                <TableRow 
+                <TableRow
                   key={item.id}
-                  sx={{ 
-                    backgroundColor: item.isLowStock ? '#fff3e0' : 'inherit' 
+                  sx={{
+                    backgroundColor: item.isLowStock ? '#fff3e0' : 'inherit'
                   }}
                 >
                   <TableCell>{item.sku}</TableCell>
